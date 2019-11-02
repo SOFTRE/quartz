@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+			    http://www.springframework.org/schema/beans/spring-beans.xsd
+			    http://www.springframework.org/schema/context
+			    http://www.springframework.org/schema/context/spring-context.xsd
+			    http://www.springframework.org/schema/aop
+			    http://www.springframework.org/schema/aop/spring-aop.xsd
+			    http://www.springframework.org/schema/tx
+			    http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!--配置自定义job-->
+        <bean id="demoJob" class="com.xxm.health.job.ClearImgJob">
+        </bean>
+    <!--任务细节描述-->
+        <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+            <property name="targetObject" ref="demoJob"/>
+            <property name="targetMethod" value="executeJob"/>
+        </bean>
+    <!--触发器，出发JobDetail的类执行，声明出发时间-->
+    <bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobDetail"/>
+    <!--定义触发器时间，使用cron的表达式-->
+        <property name="cronExpression" value="1/10 * * * * ?"/>
+    </bean>
+    <!--调度工厂,调度触发器的执行-->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="cronTrigger"></ref>
+            </list>
+        </property>
+    </bean>
+<!--    需要在ClearImgJob使用@Autowired,需要在spring容器中开启组件扫描-->
+    <context:component-scan base-package="com.xxm.health"/>
+</beans>
